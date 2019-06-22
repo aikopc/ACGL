@@ -1,0 +1,68 @@
+*prog_start
+*Initialize
+	;onclick *pgend
+	bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
+*Launcher
+cls
+for i,1,2,0
+redraw 0
+getkey isclick,1
+
+color 198,198,198
+
+disp = "ŠÇ——p" : px = 10 : py= 10 : sx = 90 : sy = 30
+gosub *simple_button : if stat = 1 : goto *setting
+;mes stat
+
+disp = "I—¹" : px = ginfo_dispx-70 : py= 10 : sx = 60 : sy = 30
+gosub *simple_button : if stat = 1 : end
+
+disp = "Œð‘ã" : px = 10 : py= ginfo_dispy-40 : sx = 60 : sy = 30
+gosub *simple_button : if stat = 1 : goto *change
+
+redraw 1
+await 16
+next
+*setting
+	cls
+	mes "a"
+	button "–ß‚é",*Launcher
+	stop
+*change
+	cls
+	mes "a"
+	button "I—¹",*pgend
+	stop
+*simple_button
+
+font msgothic,sy
+
+color 198,198,198
+boxf px,py,px+sx,py+sy
+
+color
+line px,py,px+sx,py
+line px+sx,py,px+sx,py+sy
+line px+sx,py+sy,px,py+sy
+line px,py+sy,px,py
+
+pos px,py
+mes disp
+
+if mousex > px and mousex < px+sx and mousey > py and mousey < py+sy {
+	color 255
+	boxf px,py,px+sx,py+sy
+	pos px,py
+	color
+	mes disp
+	line px,py,px+sx,py
+	line px+sx,py,px+sx,py+sy
+	line px+sx,py+sy,px,py+sy
+	line px,py+sy,px,py
+	if isclick = 1 : return 1
+}
+
+return 0
+
+*pgend
+	end

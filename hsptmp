@@ -3,7 +3,7 @@
 	;onclick *pgend
 	bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
 *Launcher
-	cls
+cls
 for i,1,2,0
 redraw 0
 getkey isclick,1

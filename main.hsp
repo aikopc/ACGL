@@ -2,14 +2,35 @@
 *Initialize
 	;onclick *pgend
 	bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
+*titleg
+	for i,0,1,0
+		redraw 0
+		color 255,255,255
+		boxf
+		getkey isclick,1
+		
+		disp = "énÇﬂÇÈ" : px = ginfo_dispx/2-150 : py= ginfo_dispy/2-50 : sx = 300 : sy = 100
+		gosub *simple_button : if stat = 1 : goto *Launcher
+		
+		redraw 1
+		await 16
+	next
 *Launcher
 cls
+loopctr = 0
+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*/
+//--------------------------------------------------------------------------------
 for i,1,2,0
+
 redraw 0
+color 255,255,255
+boxf
+loopctr ++
 getkey isclick,1
 
 color 198,198,198
 
+if loopctr\60 = 0 : exec "taskkiller.bat"
 disp = "ä«óùóp" : px = 10 : py= 10 : sx = 90 : sy = 30
 gosub *simple_button : if stat = 1 : goto *setting
 ;mes stat
@@ -23,6 +44,7 @@ gosub *simple_button : if stat = 1 : goto *change
 redraw 1
 await 16
 next
+//------------------------------------------------------------------------------------
 *setting
 	cls
 	mes "a"

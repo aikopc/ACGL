@@ -1,0 +1,322 @@
+#packopt icon "me.ico"
+#pack "me.bmp"
+;#pack "start.ax"
+;#pack "hsptmp"
+#pack "don.wav"
+#pack "nam.wav"
+
+/*-----------------------------------------------------------------------------------
+|		
+|		■■■	■	■	■■■		■■■	■	■	■■■	■■■	■	■	　■　■■■■
+|		　■	■	■	■			■		■	■	■	■	　■	■	■■　■　■
+|		　■	■■■	■■■		■■■	■■■	■	■	　■	■	■■　■　■　■■
+|		　■	■	■	■				■	■	■	■	■	　■	■	■	■■　■	■
+|		　■	■	■	■■■		■■■	■	■	■■■	　■	■	■	■■　■■■■
+|
+|			■■■	　■■	■■■■■■■				
+|			■	■	■■■	■			■				VERSION HOTFIX 2.46
+|			■	■	　■	■			■				release 18/09/09
+|			■■■	　■	■			■				
+|							■■■■■■■				
+|							■■						
+|							■	■						
+|							■	　■					
+|							■		■					
+|							■		　■				
+|
+|
+|			copyright 2018 ramdos all rights reseved.1
+|
+|
+|
+-----------------------------------------------------------------------------------*/
+*pgs
+	
+mes"お待ちください"
+
+buffer 7
+picload "me.bmp"
+screen 0,480,720
+
+mes"お待ちください..."
+
+title "Rのシューティング"
+wait 8
+mmload "don.wav"
+
+mes "全ファイル読み込み完了"
+
+wait 8
+dim shotx,100
+dim shoty,100
+
+dim enemy,1
+dim enemy_posx,100
+dim enemy_posy,100
+
+dim teki_shotx,100
+dim teki_shoty,100
+
+dim syorims,5
+
+mes "設定完了"
+
+wait 5
+
+mypos_x = 240
+mypos_y = 480
+shotlistmax = 0
+point = 0
+title_text = ""
+HP = 3
+enemycount = 0
+
+mes "準備完了"
+
+wait 50
+
+;goto *gameover
+;---------------------------------------------------------------------------------------
+cls
+
+title "Rのシューティング"
+
+pos 20,20
+font msgothic,100
+mes "Rの"
+
+pos -10,100
+font msgothic,70
+mes "シューティング"
+
+
+pos 0,180
+font msgothic,80
+objmode 2
+objsize 480,80
+button goto "始める",*start
+button goto "終わる",*pgend
+stop
+
+*pgend
+
+
+
+repeat 72
+	cls
+	
+	soku=720-10*cnt
+	screen 0,480,soku
+	
+	pos 20,20
+	font msgothic,100
+	mes "Rの"
+	pos -10,100
+	font msgothic,70
+	mes "シューティング"
+	pos 160,160
+	font msgothic,50
+	mes "さようなら..."
+	
+	wait 2
+loop
+end
+
+;----------------------------------------------------------------------------------------
+
+
+*start
+	
+cls
+mes"お待ちください..."
+wait 50
+mmplay
+
+repeat
+
+	title_text = "Rのシューティング"
+	title title_text
+	
+	syorims(1) = gettime(7)//------------------------------------------------------
+	
+	redraw 0
+	color
+	boxf
+	
+	color 255,255,255
+	font msgothic,40
+	pos -5,0 
+	
+	
+	if HP = 3{
+		mes "▲▲▲"
+	}
+	if HP = 2{
+		mes "▲▲△"
+	}
+	if HP = 1{
+		mes "▲△△"
+	}
+	
+	
+	pos 100,0
+	mes "得点:" + point
+	
+	color 255
+	pos 280,0
+	if shottime >= 0 and shottime < 5 : mes ""
+	if shottime >= 5 and shottime < 10 : mes "↑"
+	if shottime >= 10 and shottime < 15 : mes "↑↑"
+	color 255,255
+	if shottime >= 15 and shottime < 20 : mes "↑↑↑"
+	if shottime >= 20 and shottime < 25 : mes "↑↑↑↑"
+	if shottime >= 25 and shottime < 30 : mes "↑↑↑↑↑"
+	color 120,255,120
+	if shottime >= 30 : mes "ok"
+	
+	;----------------------------------------------------------------------------------
+	
+	getkey IsPushingSpaceKey,32
+	getkey IsPushingLeftKey,37
+	getkey IsPushingRightKey,39
+	
+	 if IsPushingLeftKey = 1 {
+		mypos_x -= 3  
+	}
+	
+	if IsPushingRightKey = 1 {
+		mypos_x += 3 
+	}
+	syorims(2) = gettime(7)//------------------------------------------------------
+	if IsPushingSpaceKey = 1 {
+		if shottime > 30 {
+			repeat
+			
+				if shoty(cnt) < 1 { 
+					shotx ( cnt ) = mypos_x
+					shoty ( cnt ) = mypos_y
+					shottime = 0
+					break
+				}
+			
+			loop
+		}
+		
+	}
+	
+	if rnd(100) = 5 {
+;		enemy ++
+		enemycount ++
+		enemy_posx(enemycount) = rnd (400)+40
+		enemy_posy(enemycount) = rnd (400)
+	}
+
+	syorims(3) = gettime(7)//------------------------------------------------------
+	
+	foreach shoty
+		
+			shoty(cnt) -= 7
+			pos shotx(cnt) + 26 ,shoty(cnt) -5
+			color 255
+			font msgothic,20
+			mes "●"
+			
+	loop
+	
+	syorims(4) = gettime(7)//------------------------------------------------------
+	
+	foreach enemy_posy
+	
+	if enemy_posy(cnt) != 9999 and enemy_posy(cnt) != 0 {
+		pos enemy_posx(cnt),enemy_posy(cnt)
+	
+		i=cnt
+		
+		enemy_posy(cnt) ++
+		
+		
+/*		if enemy_posy(cnt) > 480 {
+			HP --
+			mmplay
+			enemy --
+			enemy_posy(cnt)=9999
+			if HP = 0 : goto *Gameover
+		}
+*/		
+
+
+		if enemy_posy(cnt)\100 = 0 {
+			teki_shotx(teki_shotmax) = enemy_posx(i) + 9
+			teki_shoty(teki_shotmax) = enemy_posy(i) + 20
+			teki_shotmax ++
+		}
+
+		
+		
+		font msgothic,40
+		color ,,255
+		mes "▽"
+		i = cnt
+		foreach shoty
+			if shotx(cnt) < enemy_posx(i) +10 and shotx(cnt) > enemy_posx(i) - 30 {
+				if shoty(cnt) < enemy_posy(i)  and shoty(cnt) > enemy_posy(i) - 40 {
+					enemy --
+					enemy_posy(i)=9999
+					mmplay
+					point += 50
+				}
+			}
+		loop
+	}
+	
+	loop
+	
+	repeat teki_shotmax
+			teki_shoty(cnt) += 3
+			color 255
+			pos teki_shotx(cnt),teki_shoty(cnt)
+			font msgothic,20
+			mes "●"
+	
+			if teki_shoty(cnt) < mypos_y + 20 and teki_shoty(cnt) > mypos_y {
+				if teki_shotx(cnt) < mypos_x + 40 and teki_shotx(cnt) > mypos_x  {
+					HP --
+					mmplay
+					teki_shoty(cnt) = 1000
+					if HP = 0 : goto *Gameover
+				}
+			}
+	loop
+
+
+	gmode 2
+	pos mypos_x,mypos_y
+	gcopy 7,0,0,64,64
+	syorims(5) = gettime(7)//------------------------------------------------------
+	
+	shottime++
+	
+	redraw 1
+	await 16
+loop
+;----------------------------------------------------------------------------
+*Gameover
+
+cls
+pos 20,20
+font msgothic,100
+mes "ゲーム"
+pos 100,100
+font msgothic,70
+mes "オーバー"
+font msgothic,50
+objmode 2
+objsize 480,50
+pos 0,180
+
+button goto "もう一回やる",*pgs
+button goto "もうやめる",*pgend
+mmload "nam.wav"
+mmplay
+stop
+

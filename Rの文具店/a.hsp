@@ -1,0 +1,519 @@
+/*
+  .................
+ .MMMMMMMMMMMMMMMM#
+ .MM#          ,MM#
+ .MM#          .MM#
+ .MM#          .MM#
+ .MMNNNNNNNNNNNNMM#
+ .MMMMMMMMMMMMMMMMD
+ .MM#  .MM#          .dMMMMMMMMMMMm,
+ .MM#  .MM#          .MMMMMMMMMMMMM#
+ .MM#  .MM#          .MM#  dMM) .MM#
+ .MM#  .MMN........  .MM#  dMM) .MM#
+ .MM#  .MMMMMMMMMM@  .MMMMMMMM) .MM#
+                      """"""""  .WM"
+
+            (gg-               ...............               .MM$
+            JMN~              .MMM""""""""MMN:       .ggggggggMMNgggggggm-
+   .NNNNNNNNMMMNNNNNNNNNl      MMm........JM#~       .MM#""""""""""""""""!
+   ("""WMM@""""""WMMB"""^      MM#""""""""WM#~       .MM)     JN#!
+       .MMR     .dM#           MMMMMMMMMMMMM#~       .MM)     JMN+JJJJJJ,
+        (MMp   .dM#'           MMD        JM#~       .MM\     JMMMMMMMMM%
+         (MMm,.dMM>           .MMMMMMMMMMMMMN{       (MN{     JM#
+          .HMMMM#!         ......................    jM#~,MMMMMMMMMMMMN_
+          .+MMMMm,.        dMMMMMMMMMMMMMMMMMMMM#   .dM@ ,MN!~~~~~~~dM#
+      ..dMMM#=?HMMMNJ..        ..&NJ.   (MNJ..      jMM: ,MN........(MN.
+   (MMMMMB"      7HMMMMMt  .++MMMMY!     ?HMMMNg,  (MMF  ,MMMMMMMMMMMMN_
+    797`            .7TD    ?B"^            ?7W=    .=   ,H8        (H8`
+    
+R's stationary store
+v0.00.5
+19/05/14
+
+一時コメントアウト一覧
+*/
+#include"hspda.as"
+*Initialize
+	await
+	picload "i_logo_main_black.png"
+	pos 80,300
+	color 255,255,255
+	font msgothic,70
+	mes "お待ちください"	//待たせる
+	
+	randomize
+	dim item_have,100
+	note = ""
+	item_name = ""
+	i = 0
+	dim item_cost,100		
+	sdim wtextd,,100		//変数宣言
+	notesel note
+	noteload "d_itemname.dat"
+	for i,0,100
+		noteget item_name(i),i	//アイテム名を逐次配列に入力。自前の構文解析は危ういのでできるだけ簡略化。
+	next
+	noteunsel
+	
+	notesel note
+	noteload "d_cost.dat"
+	for i,0,100
+		noteget wtextd(i),i
+		item_cost(i) = int(wtextd(i))//アイテム価格データ取得。
+	next
+	buyfor = 0
+	work = 0
+	money = 1000
+	soku = 0
+	day = 0
+	whalelevel=40
+;	goto *Purchase		//デバッグ用。
+	await 720			//あんまり一瞬だと気持ち悪いので待たせる
+*g_title
+	cls
+	picload "i_title_logo_bg.png"			//タイトル画面
+	title "Rの文具店"
+	pos 120,200
+	objsize 400,60
+	font msgothic,60
+	objmode 2
+	button "はじめから",*tutorial	//近いうちに自前のボタンに変更
+	button "つづきから",*gcontinue
+	button "ハードモード",*hardmode
+	button "やめる",*endprogram
+	stop
+*tutorial
+	cls
+	mes "ここにチュートリアルが表示されます。"	//チュートリアル
+	/*
+	repeat 100
+		item_have(cnt) = 1		//デバッグ用
+	loop
+	*/
+	money = 1000
+	day = 0						//無一文で始めるのも難なので。
+	button "ok",*Purchase
+	stop
+*gcontinue
+	cls
+	onerror goto *continuemissing	//ファイルがないと死ぬから。
+	noteload "save.rss"//拡張子は凝ったほうがいいかも
+	noteget wwork,0
+	if wwork != "R's STATIONARY STORE SAVE DATA" {//一行目が固定文字列じゃない→変なファイル読んだ(デスクトップに配置したがほかのrssフィードウンチャラがあった等
+		mes "セーブデータが破損しています。"
+		mes "申し訳ありません。"
+		button "おとなしくはじめからやる",*tutorial//初めからやるしかない
+		stop
+	}
+	noteget i,1
+	if i != 1 {
+		mes "セーブデータのバージョンが違います"//セーブデータバージョンが二行目に記述(同じプログラム内では共通)1行目/2行目はバージョンに関わらず様式が一緒。
+		mes "申し訳ありません。"
+		button "おとなしくはじめからやる",*tutorial
+		stop
+	}
+	noteget wwork,2
+	money = int(wwork)
+	noteget wwork,3
+	day = int(wwork)
+	for i,0,100					//アイテム所持情報読み出し
+		noteget wwork,i+4
+		item_have(i) = int(wwork)
+	next
+	onerror 0
+	goto *Purchase
+	stop
+*continuemissing
+	mes "エラーが発生しました。"	//関係ないエラーだと困るから戻さない
+	mes "おそらく、セーブファイルが存在しないことが原因ですsave.rssファイルを消去しないでください。"
+	mes wparam
+	mes lparam
+	stop
+*tpset
+	cls
+	mes "設定"
+	
+	button "色の設定",*color_set		//設定画面
+	button "ホイールの設定",*whale_set
+	button "ok",*Purchase
+	stop
+*color_set
+	cls
+	mes "色の設定"
+	button "ok",*tpset					//各種色の設定(未実装)
+	stop
+*whale_set
+	cls
+	mes "マウスホイールのきき具合を設定します。高いと動きにくくなります。"
+	input whalelevel
+	button "ok",*tpset					//マウスホイールの調整
+	stop
+*endprogram
+	repeat 36
+	cls
+	
+	soku=720-20*cnt
+	screen 0,480,soku
+	
+	pos 20,20
+	font msgothic,100
+	mes "Rの"
+	pos -10,100
+	font msgothic,70
+	mes "文具店"
+	pos 160,160
+	font msgothic,50
+	mes "さようなら..."
+	
+	wait 10
+	loop
+	end
+*Purchase
+screen 0,480,720
+cls
+savefor = ""
+notesel savefor
+noteadd "R's STATIONARY STORE SAVE DATA"
+noteadd "1"
+logmes str(money)
+noteadd str(money)
+noteadd str(day)
+for i,0,100
+	noteadd str(item_have(i))
+next
+notesave "save.rss"
+noteunsel
+mloopctr = 0
+for i,0,1,0
+	redraw 0
+	color 255,255,255
+	boxf
+
+	mloopctr ++
+	color
+	
+	ypos = 150
+	
+	for j,1,20
+		if mousex > 400 and mousex < 433 and mousey > ypos+j*16 and mousey < ypos+(j+1)*16 {
+			color 255,128,128
+			boxf 0,ypos+j*16,480,ypos+(j+1)*16
+		}
+	next
+	
+	color
+	pos 0,0
+	font msgothic,50
+	gosub *getyear
+	mes "仕入画面"
+	pos 200,0
+	font msgothic,25
+	mes "Day"
+	pos 250,0
+	if day\10=0:color 255
+	mes day
+	pos 200,25
+	color
+	mes "" + thisyear + "年" + thismonth + "月" + thisday + "日"
+	font msgothic,50
+	pos 0,50
+	mes "所持金:" + money + "円"
+	font msgothic,17
+	getkey isclick,1
+	getkey isspacekey,32
+	page-=mousew/whalelevel
+	page = limit(page,0,80)
+	if isclick = 0 : bought = 0
+	pos 200,200
+	if mousex > 450 and mousey > 150 and mousey < 550: line 465,167,465,483 :line 464,168,464,482 :line 466,168,466,482
+	if mloopctr  >= 1000 : end
+	for j,1,21
+		//商品情報表示
+		pos 0,ypos+j*16
+		hyoji =  str(j+page-1)
+		font msgothic,17
+		if j + page >= 10 : hyoji += " "
+		hyoji += ":"
+		hyoji += item_name(j + page-1)
+		hyoji += ":"
+		mes hyoji
+		pos 260,ypos+j*16
+		if item_have(j + page-1) < have_ave : color 255
+		mes "" + item_have(j + page-1) + "	個:"
+		color
+		pos 330,ypos+j*16
+		mes "" + item_cost(j+page-1) + "	円"
+		//購入ボタン(クリックできる)
+		pos 400,ypos+j*16
+		mes "購入"
+		//クリック判定
+		if mousex > 400 and mousex < 433 and mousey > ypos+j*16 and mousey < ypos+(j+1)*16 {
+			
+			if isclick = 1 and item_cost(j+page-1) <= money and bought = 0{	//bought:マウス押しっぱなし判定フラグ
+				logmes str(bought)
+				item_have(j + page-1) ++
+				money -= item_cost(j+page-1)
+				bought = 1
+			}
+		}
+		line 0,ypos+j*16,480,ypos+j*16
+	
+		line 0,ypos+j*16,480,ypos+j*16
+	next
+	
+	line 0,ypos+21*16,480,ypos+21*16
+	
+	for j,1,21
+		if mousex > 400 and mousex < 433 and mousey > ypos+j*16 and mousey < ypos+(j+1)*16 {
+			color 190,197,255
+			boxf 395,ypos-5+j*16,438,ypos+5+(j+1)*16
+			color
+			pos 395,ypos-3+j*16
+			font msgothic,23
+			mes "購入"
+		}
+	next
+	
+	font msgothic,30
+	
+	color 198,198,198
+	boxf 0,100,90,130
+	
+	color
+	line 0,100,90,100
+	line 90,100,90,130
+	line 90,130,0,130
+	line 0,130,0,100
+	
+	pos 0,100
+	mes "全購入"
+	if mousex < 90 and mousey > 100 and mousey < 130 {
+		;mes "全購入"
+		color 255
+		boxf 0,100,90,130
+		pos 0,100
+		color
+		mes "全購入"
+		color
+		line 0,100,90,100
+		line 90,100,90,130
+		line 90,130,0,130
+		line 0,130,0,100
+		if isclick = 1 : goto *allbuy
+	}
+	
+	color 198,198,198
+	boxf 0,130,90,160
+	
+	color
+	line 0,130,90,130
+	line 90,130,90,160
+	line 90,160,0,160
+	line 0,160,0,130
+	
+	color
+	pos 0,130
+	mes "日送り"
+	
+	
+	if mousex < 90 and mousey > 130 and mousey < 160 {
+		;mes "日送りにオンマウス"
+		color 255
+		boxf 0,130,90,160
+		pos 0,130
+		color
+		mes "日送り"
+		color
+		line 0,130,90,130
+		line 90,130,90,160
+		line 90,160,0,160
+		line 0,160,0,130
+		if isclick = 1 : goto *business
+	}
+	
+	color 198,198,198
+	boxf 100,100,190,130
+	
+	color
+	line 100,100,190,100
+	line 190,100,190,130
+	line 190,130,100,130
+	line 100,130,100,100
+	if page < 20 : color 255,255,255
+	pos 100,100
+	mes "前の頁"
+	if mousex > 100 and mousex < 190 and mousey > 100 and mousey < 130 and page >= 20 and bought = 0{
+		;mes "全購入"
+		color 255
+		boxf 100,100,190,130
+		pos 100,100
+		color
+		mes "前の頁"
+		color
+		line 100,100,190,100
+		line 190,100,190,130
+		line 190,130,100,130
+		line 100,130,100,100
+		if isclick = 1 : page -= 20 : bought = 1
+	}
+	
+	color 198,198,198
+	boxf 100,130,190,160
+	
+	color
+	line 100,130,190,130
+	line 190,130,190,160
+	line 190,160,100,160
+	line 100,160,100,130
+	
+	if page > 60 : color 255,255,255
+	pos 100,130
+	mes "次の頁
+	
+	ca = int(mousex > 100 and mousex < 190 and mousey > 130 and mousey < 160)
+	cb = int(page <= 60 and bought = 0)
+	if ca and cb {
+		;mes "日送りにオンマウス"
+		color 255
+		boxf 100,130,190,160
+		pos 100,130
+		color
+		mes "次の頁"
+		color
+		line 100,130,190,130
+		line 190,130,190,160
+		line 190,160,100,160
+		line 100,160,100,130
+		if isclick = 1 : page += 20 : bought = 1
+	}
+	
+	
+	color 198,198,198
+	boxf 200,100,290,130
+	
+	color
+	line 200,100,290,100
+	line 290,100,290,130
+	line 290,130,200,130
+	line 200,130,200,100
+	pos 200,100
+	mes "メダル"
+	if mousex > 200 and mousex < 290 and mousey > 100 and mousey < 130 and bought = 0{
+		;mes "全購入"
+		color 255
+		boxf 200,100,290,130
+		pos 200,100
+		color
+		mes "メダル"
+		color
+		line 200,100,290,100
+		line 290,100,290,130
+		line 290,130,200,130
+		line 200,130,200,100
+		if isclick = 1 : goto *checkmedal
+	}
+	
+	color 198,198,198
+	boxf 200,130,290,160
+	
+	color
+	line 200,130,290,130
+	line 290,130,290,160
+	line 290,160,200,160
+	line 200,160,200,130
+	
+	pos 207,130
+	font msgothic,15
+	mes "秘密のパス"
+	pos 200,145
+	mes "ワ"
+	pos 214,145
+	mes "ー"
+	pos 228,145
+	mes "ドを入力"//秘密のパスワードを入力。はみでるのでいろいろ修正。
+	font msgothic,30
+	ca = int(mousex > 200 and mousex < 290 and mousey > 130 and mousey < 160)
+	cb = int( bought = 0)
+	if ca and cb {
+		;mes "日送りにオンマウス"
+		color 255
+		boxf 200,130,290,160
+		pos 215,130
+		color
+		pos 207,130
+		font msgothic,15
+		mes "秘密のパス"
+		pos 200,145
+		mes "ワ"
+		pos 214,145
+		mes "ー"
+		pos 228,145
+		mes "ドを入力"//秘密のパスワードを入力。はみでるのでいろいろ修正。
+		color
+		line 200,130,290,130
+		line 290,130,290,160
+		line 290,160,200,160
+		line 200,160,200,130
+		if isclick = 1 : goto *checkpassword
+	}
+	if isspacekey = 1 : goto *business
+	redraw 1
+	await 16
+next
+*allbuy
+	cls
+	mes "お待ちください..."
+	for count,1,100
+		if item_cost(count)<=money{
+			item_have(count) ++
+			money -= item_cost(count)
+		}
+	next
+	wait 10
+goto *Purchase
+*business
+	cls
+	mes "営業"
+	total = 0
+	day ++      
+	repeat 100
+		work = rnd(100)
+		if item_have(work) != 0 {
+			item_have(work) --
+			benefit = int(1.2*item_cost(work))
+			money += benefit
+			total += benefit
+			mes item_name(work) + "がうれました！"
+		}
+		wait 1
+	loop
+	mes "本日の売上:" + total + "円"
+	wait 100
+	if money >= 1000000000 : money = 99999999
+	tobuy = 0
+	amount = 0
+	work = 0
+	have_ave = 0
+for j,1,100
+	have_ave += item_have(j + work)
+next
+have_ave /= 100
+	goto *Purchase
+
+*getyear
+	thisyear = day/360+2019
+	thismonth = day\360/30+1
+	thisday = day\30+1
+	return 0
+*checkmedal
+	cls
+	button "戻る",*Purchase
+	stop
+*checkpassword
+	cls
+	button "戻る",*Purchase
+	stop
+*hardmode
+	cls
+	button "ok",*g_title
+	stop

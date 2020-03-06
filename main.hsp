@@ -1,0 +1,90 @@
+*prog_start
+*Initialize
+	;onclick *pgend
+	bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
+*titleg
+	for i,0,1,0
+		redraw 0
+		color 255,255,255
+		boxf
+		getkey isclick,1
+		
+		disp = "始める" : px = ginfo_dispx/2-150 : py= ginfo_dispy/2-50 : sx = 300 : sy = 100
+		gosub *simple_button : if stat = 1 : goto *Launcher
+		
+		redraw 1
+		await 16
+	next
+*Launcher
+cls
+loopctr = 0
+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*/
+//--------------------------------------------------------------------------------
+for i,1,2,0
+
+redraw 0
+color 255,255,255
+boxf
+loopctr ++
+getkey isclick,1
+
+color 198,198,198
+
+if loopctr\60 = 0 : exec "taskkiller.bat"
+disp = "管理用" : px = 10 : py= 10 : sx = 90 : sy = 30
+gosub *simple_button : if stat = 1 : goto *setting
+;mes stat
+
+disp = "終了" : px = ginfo_dispx-70 : py= 10 : sx = 60 : sy = 30
+gosub *simple_button : if stat = 1 : end
+
+disp = "交代" : px = 10 : py= ginfo_dispy-40 : sx = 60 : sy = 30
+gosub *simple_button : if stat = 1 : goto *change
+
+redraw 1
+await 16
+next
+//------------------------------------------------------------------------------------
+*setting
+	cls
+	mes "a"
+	button "戻る",*Launcher
+	stop
+*change
+	cls
+	mes "a"
+	button "終了",*pgend
+	stop
+*simple_button
+
+font msgothic,sy
+
+color 198,198,198
+boxf px,py,px+sx,py+sy
+
+color
+line px,py,px+sx,py
+line px+sx,py,px+sx,py+sy
+line px+sx,py+sy,px,py+sy
+line px,py+sy,px,py
+
+pos px,py
+mes disp
+
+if mousex > px and mousex < px+sx and mousey > py and mousey < py+sy {
+	color 255
+	boxf px,py,px+sx,py+sy
+	pos px,py
+	color
+	mes disp
+	line px,py,px+sx,py
+	line px+sx,py,px+sx,py+sy
+	line px+sx,py+sy,px,py+sy
+	line px,py+sy,px,py
+	if isclick = 1 : return 1
+}
+
+return 0
+
+*pgend
+	end

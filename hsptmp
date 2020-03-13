@@ -1,7 +1,27 @@
 *prog_start
 *Initialize
-	;onclick *pgend
-	bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
+corner_button_zize = 50
+buffer 50
+picload "logo\\bungu.png"
+buffer 51
+picload "logo\\HUMAN.png"
+buffer 52
+picload "logo\\shooting.png"
+
+mmload "sound/enter.wav",1
+icosize = (ginfo_dispy-300)/2			//アイコンの基本的なサイズ
+xmarginsize = (ginfo_dispx-icosize*3)/4	//アイコンとアイコンの間隔x(yは100で固定)
+
+picosize1 = 0
+picosize2 = 0
+picosize3 = 0
+picosize4 = 0
+picosize5 = 0
+picosize6 = 0
+
+
+
+bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
 *titleg
 	for i,0,1,0
 		redraw 0
@@ -15,10 +35,11 @@
 		redraw 1
 		await 16
 	next
+	
 *Launcher
 cls
 loopctr = 0
-/*/*//*/*//*/*//*//*//*//*//*/*//*/*//*/*//*//*//*//*//*/*//*/*/
+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*/
 //--------------------------------------------------------------------------------
 for i,1,2,0
 
@@ -26,19 +47,128 @@ redraw 0
 color 255,255,255
 boxf
 loopctr ++
+
+
+wasclick = isclick
 getkey isclick,1
+if wasclick = 0 and isclick = 1{
+	uniqueclick=1
+}else{
+	uniqueclick=0
+}
 
 color 198,198,198
 
-disp = "管理用" : px = 10 : py= 10 : sx = 90 : sy = 30
+disp = "管理用" : px = 20 : py= 20 : sx = corner_button_zize*3 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *setting
 ;mes stat
 
-disp = "終了" : px = ginfo_dispx-70 : py= 10 : sx = 60 : sy = 30
+disp = "終了" : px = ginfo_dispx-20-corner_button_zize*2 : py= 20 : sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : end
 
-disp = "交代" : px = 10 : py= ginfo_dispy-40 : sx = 60 : sy = 30
+disp = "交代" : px = 20 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *change
+
+disp = "検索" : px = ginfo_dispx-20-corner_button_zize*2 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
+gosub *simple_button : if stat = 1 : goto *search
+
+
+
+
+pos xmarginsize-picosize1/2,100-picosize1/2
+gzoom icosize+picosize1,icosize+picosize1,50,0,0,256,256,1
+if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 100 and mousey < 100+icosize{
+	picosize1 +=16
+	picosize1 = limit(picosize1,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize1 -=16
+	picosize1 = limit(picosize1,0,80)
+}
+
+
+
+pos xmarginsize*2+icosize-picosize2/2,100-picosize2/2
+gzoom icosize+picosize2,icosize+picosize2,50,0,0,256,256,1
+if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mousey > 100 and mousey < 100+icosize{
+	picosize2 +=16
+	picosize2 = limit(picosize2,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize2 -=16
+	picosize2 = limit(picosize2,0,80)
+}
+
+
+
+pos xmarginsize*3+icosize*2-picosize3/2,100-picosize3/2
+gzoom icosize+picosize3,icosize+picosize3,50,0,0,256,256,1
+if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mousey > 100 and mousey < 100+icosize{
+	picosize3 +=16
+	picosize3 = limit(picosize3,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize3 -=16
+	picosize3 = limit(picosize3,0,80)
+}
+
+
+
+pos xmarginsize-picosize4/2,200+icosize-picosize4/2
+gzoom icosize+picosize4,icosize+picosize4,50,0,0,256,256,1
+if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 200+icosize and mousey < 200+2*icosize{
+	picosize4 +=16
+	picosize4 = limit(picosize4,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize4 -=16
+	picosize4 = limit(picosize4,0,80)
+}
+
+
+
+pos xmarginsize*2+icosize-picosize5/2,200+icosize-picosize5/2
+gzoom icosize+picosize5,icosize+picosize5,50,0,0,256,256,1
+if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mousey > 200+icosize and mousey < 200+2*icosize{
+	picosize5 +=16
+	picosize5 = limit(picosize5,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize5 -=16
+	picosize5 = limit(picosize5,0,80)
+}
+
+
+
+pos xmarginsize*3+icosize*2-picosize6/2,200+icosize-picosize6/2
+gzoom icosize+picosize6,icosize+picosize6,50,0,0,256,256,1
+if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mousey > 200+icosize and mousey < 200+2*icosize{
+	picosize6 +=16
+	picosize6 = limit(picosize6,0,80)
+	if uniqueclick = 1{
+		mmplay 1
+		exec "shooting_of_R\\Rのシューティング.exe"
+	}
+}else{
+	picosize6 -=16
+	picosize6 = limit(picosize6,0,80)
+}
+
 
 redraw 1
 await 16
@@ -46,13 +176,18 @@ next
 //------------------------------------------------------------------------------------
 *setting
 	cls
-	mes "a"
+	mes "設定"
 	button "戻る",*Launcher
 	stop
 *change
 	cls
-	mes "a"
-	button "終了",*pgend
+	mes "交代"
+	button "戻る",*Launcher
+	stop
+*search
+	cls
+	mes "検索"
+	button "戻る",*Launcher
 	stop
 *simple_button
 

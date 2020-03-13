@@ -1,0 +1,55 @@
+screen 0,900,480
+randomize
+dim list,6
+repeat 6
+list.cnt = rnd(100)
+loop
+mmload "ok.wav",0
+mmload "ng.wav",1
+repeat
+	redraw 0
+	color 255,255,255
+	boxf
+	
+	color
+	font msgothic,150
+	pos 100,50
+	mes list.0
+
+	pos 350,50
+	mes list.1
+	
+	pos 600,50
+	mes list.2
+	
+	pos 100,250
+	mes list.3
+
+	pos 350,250
+	mes list.4
+
+	pos 600,250
+	mes list.5
+
+	getkey click,1
+
+	if click = 1 and mousex>100 and mousex < 250 and mousey > 50 and mousey < 200{
+		title str((list.0)\2)
+		if (list.0)\2 = 0 or (list.0)\3 = 0 or (list.0)\5 = 0 or (list.0)\7 = 0/* and (list.0) != 2 and (list.0) != 3 and (list.0) != 5 and (list.0) != 7*/{
+			mmplay 1
+			goto *gameover
+		}else{
+			//素数
+			mmplay 0
+			list.0 = rnd(100)
+			point++
+			
+		}
+	}
+	redraw 1
+	await 16
+loop
+*gameover
+	cls
+	font msgothic,100
+	mes "ゲームオーバー！！"

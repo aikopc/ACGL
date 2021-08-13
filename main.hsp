@@ -10,8 +10,8 @@ buffer 52
 picload "logo\\shooting.png"
 
 mmload "sound/enter.wav",1
-icosize = (ginfo_dispy-300)/2			//�A�C�R���̊�{�I�ȃT�C�Y
-xmarginsize = (ginfo_dispx-icosize*3)/4	//�A�C�R���ƃA�C�R���̊Ԋux(y��100�ŌŒ�)
+icosize = (ginfo_dispy-300)/2			//アイコンの基本的なサイズ
+xmarginsize = (ginfo_dispx-icosize*3)/4	//アイコンとアイコンの間隔x(yは100で固定)
 
 picosize1 = 0
 picosize2 = 0
@@ -29,14 +29,14 @@ bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
 		color 255,255,255
 		boxf
 		getkey isclick,1
-		
-		disp = "�n�߂�" : px = ginfo_dispx/2-150 : py= ginfo_dispy/2-50 : sx = 300 : sy = 100
+
+		disp = "始める" : px = ginfo_dispx/2-150 : py= ginfo_dispy/2-50 : sx = 300 : sy = 100
 		gosub *simple_button : if stat = 1 : goto *Launcher
-		
+
 		redraw 1
 		await 16
 	next
-	
+
 *Launcher
 cls
 loopctr = 0
@@ -60,21 +60,38 @@ if wasclick = 0 and isclick = 1{
 
 color 198,198,198
 
-disp = "�Ǘ��p" : px = 20 : py= 20 : sx = corner_button_zize*3 : sy = corner_button_zize
+disp = "管理用" : px = 20 : py= 20 : sx = corner_button_zize*3 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *setting
 ;mes stat
 
-disp = "�I��" : px = ginfo_dispx-20-corner_button_zize*2 : py= 20 : sx = corner_button_zize*2 : sy = corner_button_zize
-gosub *simple_button : if stat = 1 : end
+disp = "終了" : px = ginfo_dispx-20-corner_button_zize*2 : py= 20 : sx = corner_button_zize*2 : sy = corner_button_zize
+gosub *simple_button : if stat = 1 : goto *exit
 
-disp = "���" : px = 20 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
+disp = "交代" : px = 20 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *change
 
-disp = "����" : px = ginfo_dispx-20-corner_button_zize*2 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
+disp = "検索" : px = ginfo_dispx-20-corner_button_zize*2 : py= ginfo_dispy-20-corner_button_zize : sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *search
 
+disp = "→" : px = ginfo_dispx-20-corner_button_zize*2 : py= 480: sx = corner_button_zize*2 : sy = corner_button_zize
+gosub *simple_button : if stat = 1 : goto *page2
 
+pos 800,50 : font msgothic,40 : mes "トップページ"
 
+pos 600,50 : font msgothic,40 : mes "残り時間"
+*timer
+byou=byou-1
+if byou<0 :byou=9000
+font "",40
+if byou=3000 :goto *warning1
+if byou=1200 :goto *warning2
+if byou=0    :goto *timeup
+if byou=-60  :goto *timeover
+minute=int(byou/600)
+second=int((byou-600*minute)/10)
+if second<10:second="0"+second+""
+mes ""+minute+"分"+second+"秒"
+wait 10
 
 pos xmarginsize-picosize1/2,100-picosize1/2
 gzoom icosize+picosize1,icosize+picosize1,50,0,0,256,256,1
@@ -83,7 +100,7 @@ if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 100 and mo
 	picosize1 = limit(picosize1,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize1 -=16
@@ -99,7 +116,7 @@ if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mouse
 	picosize2 = limit(picosize2,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize2 -=16
@@ -115,7 +132,7 @@ if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mou
 	picosize3 = limit(picosize3,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize3 -=16
@@ -131,7 +148,7 @@ if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 200+icosiz
 	picosize4 = limit(picosize4,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe
 	}
 }else{
 	picosize4 -=16
@@ -147,7 +164,7 @@ if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mouse
 	picosize5 = limit(picosize5,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize5 -=16
@@ -163,13 +180,17 @@ if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mou
 	picosize6 = limit(picosize6,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\R�̃V���[�e�B���O.exe"
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize6 -=16
 	picosize6 = limit(picosize6,0,80)
 }
 
+//randomize
+//a=rnd(100)
+//repeat 3
+//トップページの下3つのゲームを選ぶ。
 
 redraw 1
 await 16
@@ -177,19 +198,49 @@ next
 //------------------------------------------------------------------------------------
 *setting
 	cls
-	mes "�ݒ�"
-	button "�߂�",*Launcher
+    pass=""
+    mes "パスワードを入力してください"
+    objsize 200,30
+    input pass,300,20,24
+    button "OK",*check
+    button "元のページに戻る",*Launcher
+    stop
+*check
+    if pass="password":goto *settingmenu : else :goto *wrong //パスワードは「password」になってますが適当に変えてください
 	stop
-*change
+*wrong
 	cls
-	mes "���"
-	button "�߂�",*Launcher
+    mes "パスワードが違います"
+    objsize 200,30
+    button "OK",*setting
+    button "元のページに戻る",*Launcher
+    stop
+*settingmenu
+    cls
+    objsize 200,30
+    button "トップページ更新",*Launcher
+    button gosub "データ削除",*deletedata
+    button "ゲーム差し替え",*gamemaneger
+    button "交代,*change
+    button "元のページに戻る",*Launcher
+    stop
+*change
+	objsize 200,30
+	dialog "本当に交代しますか？",2
+	if stat=6:goto *koutai
+	if stat=7:goto *Launcher
 	stop
 *search
 	cls
-	mes "����"
-	button "�߂�",*Launcher
+	mes "・ｽ・ｽ・ｽ・ｽ"
+	kensaku=""
+	input kensaku,200,30,16
+	button "戻る",*Launcher
 	stop
+*koutai
+	//delete "" 削除するセーブデータ決定
+	exec "taskkill /im shooting_of_R\\R・ｽﾌシ・ｽ・ｽ・ｽ[・ｽe・ｽB・ｽ・ｽ・ｽO.exe"
+	goto *prog_start
 *simple_button
 
 font msgothic,sy
@@ -220,6 +271,53 @@ if mousex > px and mousex < px+sx and mousey > py and mousey < py+sy {
 }
 
 return 0
+stop
+*deletedata
+dialog "本当に削除しますか？",2
+if stat=6:delete ""
+return
+
+*gamemaneger
+cls
+mes "削除するゲームの名前を入力してください"
+	deletegame=""
+	input deletegame,200,30,16
+	button "・ｽ尞・,*sakujo
+	button "・ｽﾟゑｿｽ",*Launcher
+	stop
+*sakujo
+	notedel deletegame
+goto *settingmenu
+
+*page2
+//五十音順にゲームを並べてください（配列があります）
+cls
+button "戻る",*Launcher
+stop
+
+sdim gamename,100
+notesel gamename
+noteadd "Rのシューティング"
+noteadd "Sのシューティング" //実際のゲーム名に差し替えてください。
+noteadd "Tのシューティング1
+
+*warning1
+dialog "残り5分です。",0
+goto *Launcher
+*warning2
+dialog "残り2分です。",0
+goto *Launcher
+*timeup
+dialog "15分経過しました。速やかに交代してください。",1
+goto *Launcher
+*timeover
+dialog "時間切れです。強制的に交代します。",1
+goto *koutai
+
+
+*exit
+dialog "本当に終了しますか？",2
+if stat=6:end
 
 *pgend
 	end

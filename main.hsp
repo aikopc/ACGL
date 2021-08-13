@@ -1,6 +1,12 @@
 *prog_start
 *Initialize
 corner_button_zize = 50
+buffer 10
+picload "icon\\left.png"
+buffer 11
+picload "icon\\right.png"
+
+
 buffer 50
 picload "logo\\bungu.png"
 buffer 51
@@ -8,21 +14,44 @@ picload "logo\\HUMAN.png"
 buffer 52
 picload "logo\\shooting.png"
 
+
+
+
+
 mmload "sound/enter.wav",1
 icosize = (ginfo_dispy-300)/2			//アイコンの基本的なサイズ
 xmarginsize = (ginfo_dispx-icosize*3)/4	//アイコンとアイコンの間隔x(yは100で固定)
 
-picosize1 = 0
+
+screen 20,ginfo_dispx-xmarginsize*2,ginfo_dispy-200
+gsel 20,2
+picosize1 = 0	//アイコンの現在のサイズ(急にでかくならないように)
 picosize2 = 0
 picosize3 = 0
 picosize4 = 0
 picosize5 = 0
 picosize6 = 0
 
+stmp = ""
+gamefile = ""
+notesel gamefile
+noteload "gamefilename.dat"		//ゲームファイルのパスを読み込む
 
-
-bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
-*titleg
+dim gameicoid,100	//ゲームアイコンが入っているウィンドウのID
+gameicoid.0 = 50
+gameicoid.1 = 51
+gameicoid.2 = 52
+gameicoid.3 = 50
+gameicoid.4 = 51
+gameicoid.5 = 52
+gameicoid.6 = 51
+gameicoid.7 = 52
+gameicoid.8 = 50
+gameicoid.9 = 51
+gameicoid.10 = 52
+gameicoid.11 = 50
+bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0		//サイズが可変っていう難しさ
+*titleg		//タイトル画面
 	for i,0,1,0
 		redraw 0
 		color 255,255,255
@@ -39,6 +68,16 @@ bgscr 0,ginfo_dispx,ginfo_dispy,0,0,0
 *Launcher
 cls
 loopctr = 0
+
+page = 0
+indexid0 = page*6+0 //0始まりに注意
+indexid1 = page*6+1
+indexid2 = page*6+2
+indexid3 = page*6+3
+indexid4 = page*6+4
+indexid5 = page*6+5
+
+
 /*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*+/*/
 //--------------------------------------------------------------------------------
 for i,1,2,0
@@ -49,19 +88,17 @@ boxf
 loopctr ++
 
 
-wasclick = isclick
-getkey isclick,1
+wasclick = isclick			//現在の状況を一旦保存
+getkey isclick,1			//現在の状況を更新
 if wasclick = 0 and isclick = 1{
-	uniqueclick=1
+	uniqueclick=1					//クリックされた瞬間パルス
 }else{
 	uniqueclick=0
 }
 
-color 198,198,198
-
-disp = "管理用" : px = 20 : py= 20 : sx = corner_button_zize*3 : sy = corner_button_zize
+//todo:マジックナンバー要改善
+disp = "管理用" : px = 20 : py= 20 : sx = corner_button_zize*3 : sy = corner_button_zize			//角のボタン呼び出し。corner_button_zizeは冒頭で50に定義。
 gosub *simple_button : if stat = 1 : goto *setting
-;mes stat
 
 disp = "終了" : px = ginfo_dispx-20-corner_button_zize*2 : py= 20 : sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : end
@@ -73,16 +110,16 @@ disp = "検索" : px = ginfo_dispx-20-corner_button_zize*2 : py= ginfo_dispy-20-co
 gosub *simple_button : if stat = 1 : goto *search
 
 
-
-
+//todo:任意のクリックに反応してしまう(ゲーム起動中は反応させたくない)
 pos xmarginsize-picosize1/2,100-picosize1/2
-gzoom icosize+picosize1,icosize+picosize1,50,0,0,256,256,1
-if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 100 and mousey < 100+icosize{
+gzoom icosize+picosize1,icosize+picosize1,gameicoid.indexid0,0,0,256,256,1
+if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 100 and mousey < 100+icosize{		//オンマウス時
 	picosize1 +=16
 	picosize1 = limit(picosize1,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid0
+		exec stmp
 	}
 }else{
 	picosize1 -=16
@@ -92,13 +129,14 @@ if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 100 and mo
 
 
 pos xmarginsize*2+icosize-picosize2/2,100-picosize2/2
-gzoom icosize+picosize2,icosize+picosize2,50,0,0,256,256,1
+gzoom icosize+picosize2,icosize+picosize2,gameicoid.indexid1,0,0,256,256,1
 if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mousey > 100 and mousey < 100+icosize{
 	picosize2 +=16
 	picosize2 = limit(picosize2,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid1
+		exec stmp
 	}
 }else{
 	picosize2 -=16
@@ -108,13 +146,15 @@ if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mouse
 
 
 pos xmarginsize*3+icosize*2-picosize3/2,100-picosize3/2
-gzoom icosize+picosize3,icosize+picosize3,50,0,0,256,256,1
+gzoom icosize+picosize3,icosize+picosize3,gameicoid.indexid2,0,0,256,256,1
 if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mousey > 100 and mousey < 100+icosize{
 	picosize3 +=16
 	picosize3 = limit(picosize3,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid2
+		assert
+		exec stmp
 	}
 }else{
 	picosize3 -=16
@@ -124,13 +164,14 @@ if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mou
 
 
 pos xmarginsize-picosize4/2,200+icosize-picosize4/2
-gzoom icosize+picosize4,icosize+picosize4,50,0,0,256,256,1
+gzoom icosize+picosize4,icosize+picosize4,gameicoid.indexid3,0,0,256,256,1
 if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 200+icosize and mousey < 200+2*icosize{
 	picosize4 +=16
 	picosize4 = limit(picosize4,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid3
+		exec stmp
 	}
 }else{
 	picosize4 -=16
@@ -140,13 +181,14 @@ if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 200+icosiz
 
 
 pos xmarginsize*2+icosize-picosize5/2,200+icosize-picosize5/2
-gzoom icosize+picosize5,icosize+picosize5,50,0,0,256,256,1
+gzoom icosize+picosize5,icosize+picosize5,gameicoid.indexid4,0,0,256,256,1
 if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mousey > 200+icosize and mousey < 200+2*icosize{
 	picosize5 +=16
 	picosize5 = limit(picosize5,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid4
+		exec stmp
 	}
 }else{
 	picosize5 -=16
@@ -156,19 +198,38 @@ if mousex > xmarginsize*2+icosize and mousex < xmarginsize*2+icosize*2 and mouse
 
 
 pos xmarginsize*3+icosize*2-picosize6/2,200+icosize-picosize6/2
-gzoom icosize+picosize6,icosize+picosize6,50,0,0,256,256,1
+gzoom icosize+picosize6,icosize+picosize6,gameicoid.indexid5,0,0,256,256,1
 if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mousey > 200+icosize and mousey < 200+2*icosize{
 	picosize6 +=16
 	picosize6 = limit(picosize6,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe"
+		noteget stmp,indexid5
+		exec stmp
 	}
 }else{
 	picosize6 -=16
 	picosize6 = limit(picosize6,0,80)
 }
 
+gmode 2
+pos 0,ginfo_dispy/2-32
+gcopy 10,0,0,64,64
+
+
+if mousex > 0 and mousex < 64 and mousey > ginfo_dispy/2-32 and mousey < ginfo_dispy/2+32 and uniqueclick = 1{
+	page = 0
+	changingpage = 1
+	gosub *changepage
+}
+
+gmode 2
+pos ginfo_dispx-64,ginfo_dispy/2-32
+gcopy 11,0,0,64,64
+if mousex > ginfo_dispx-64 and mousex < ginfo_dispx and mousey > ginfo_dispy/2-32 and mousey < ginfo_dispy/2+32 and uniqueclick = 1{
+	page = 1
+	gosub *changepage
+}
 
 redraw 1
 await 16
@@ -222,3 +283,11 @@ return 0
 
 *pgend
 	end
+*changepage
+indexid0 = page*6+0 //0始まりに注意
+indexid1 = page*6+1
+indexid2 = page*6+2
+indexid3 = page*6+3
+indexid4 = page*6+4
+indexid5 = page*6+5
+return 0

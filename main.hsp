@@ -232,14 +232,14 @@ next
 	stop
 *search
 	cls
-	mes "・ｽ・ｽ・ｽ・ｽ"
+	mes "検索"
 	kensaku=""
 	input kensaku,200,30,16
 	button "戻る",*Launcher
 	stop
 *koutai
 	//delete "" 削除するセーブデータ決定
-	exec "taskkill /im shooting_of_R\\R・ｽﾌシ・ｽ・ｽ・ｽ[・ｽe・ｽB・ｽ・ｽ・ｽO.exe"
+	exec "taskkill /im shooting_of_R\\R　O.exe"
 	goto *prog_start
 *simple_button
 
@@ -282,8 +282,8 @@ cls
 mes "削除するゲームの名前を入力してください"
 	deletegame=""
 	input deletegame,200,30,16
-	button "・ｽ尞・,*sakujo
-	button "・ｽﾟゑｿｽ",*Launcher
+	button "削除",*sakujo
+	button "戻る",*Launcher
 	stop
 *sakujo
 	notedel deletegame

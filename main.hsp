@@ -86,7 +86,7 @@ font "",40
 if byou=3000 :goto *warning1
 if byou=1200 :goto *warning2
 if byou=0    :goto *timeup
-if byou=-60  :goto *timeover
+if byou=-600  :goto *timeover
 minute=int(byou/600)
 second=int((byou-600*minute)/10)
 if second<10:second="0"+second+""

@@ -190,7 +190,7 @@ if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mou
 //randomize
 //a=rnd(100)
 //repeat 3
-//トップページの下3つのゲームを選ぶ。
+//トップページの下3つのゲームを選ばせたい。
 
 redraw 1
 await 16
@@ -221,7 +221,7 @@ next
     button "トップページ更新",*Launcher
     button gosub "データ削除",*deletedata
     button "ゲーム差し替え",*gamemaneger
-    button "交代,*change
+    button "交代",*change
     button "元のページに戻る",*Launcher
     stop
 *change
@@ -299,7 +299,7 @@ sdim gamename,100
 notesel gamename
 noteadd "Rのシューティング"
 noteadd "Sのシューティング" //実際のゲーム名に差し替えてください。
-noteadd "Tのシューティング1
+noteadd "Tのシューティング"
 
 *warning1
 dialog "残り5分です。",0

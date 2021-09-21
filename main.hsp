@@ -78,20 +78,21 @@ gosub *simple_button : if stat = 1 : goto *page2
 
 pos 800,50 : font msgothic,40 : mes "トップページ"
 
-pos 600,50 : font msgothic,40 : mes "残り時間"
+pos 600,30 : font msgothic,40 : mes "残り時間"
 *timer
 byou=byou-1
-if byou<0 :byou=9000
+if byou<0:byou=9000
 font "",40
 if byou=3000 :goto *warning1
 if byou=1200 :goto *warning2
 if byou=0    :goto *timeup
-if byou=-600  :goto *timeover
+if byou=-600 :goto *timeover
 minute=int(byou/600)
 second=int((byou-600*minute)/10)
 if second<10:second="0"+second+""
 mes ""+minute+"分"+second+"秒"
-wait 10
+
+wait 1
 
 pos xmarginsize-picosize1/2,100-picosize1/2
 gzoom icosize+picosize1,icosize+picosize1,50,0,0,256,256,1
@@ -148,7 +149,7 @@ if mousex > xmarginsize and mousex < xmarginsize+icosize and mousey > 200+icosiz
 	picosize4 = limit(picosize4,0,80)
 	if uniqueclick = 1{
 		mmplay 1
-		exec "shooting_of_R\\Rのシューティング.exe
+		exec "shooting_of_R\\Rのシューティング.exe"
 	}
 }else{
 	picosize4 -=16
@@ -190,7 +191,11 @@ if mousex > xmarginsize*3+icosize*2 and mousex < xmarginsize*3+icosize*3 and mou
 //randomize
 //a=rnd(100)
 //repeat 3
-//トップページの下3つのゲームを選ばせたい。
+
+
+
+
+//トップページの下3つのゲームを選ぶ。
 
 redraw 1
 await 16
@@ -203,6 +208,8 @@ next
     objsize 200,30
     input pass,300,20,24
     button "OK",*check
+    getkey a,13
+    if a=1:goto *check
     button "元のページに戻る",*Launcher
     stop
 *check
@@ -239,7 +246,7 @@ next
 	stop
 *koutai
 	//delete "" 削除するセーブデータ決定
-	exec "taskkill /im shooting_of_R\\R　O.exe"
+	exec "taskkill /im shooting_of_R\\Rのシューティング.exe"
 	goto *prog_start
 *simple_button
 

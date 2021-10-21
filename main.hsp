@@ -76,21 +76,22 @@ gosub *simple_button : if stat = 1 : goto *search
 disp = "→" : px = ginfo_dispx-20-corner_button_zize*2 : py= 480: sx = corner_button_zize*2 : sy = corner_button_zize
 gosub *simple_button : if stat = 1 : goto *page2
 
-pos 800,50 : font msgothic,40 : mes "トップページ"
+pos 580,25 : font msgothic,40 : mes "トップページ"
 
-pos 600,30 : font msgothic,40 : mes "残り時間"
+pos 320,15 : font msgothic,40 : mes "残り時間"
+
 *timer
-byou=byou-1
-if byou<0:byou=9000
+byou=byou-1:if byou<0:byou=9000
 font "",40
-if byou=3000 :goto *warning1
-if byou=1200 :goto *warning2
-if byou=0    :goto *timeup
-if byou=-600 :goto *timeover
 minute=int(byou/600)
 second=int((byou-600*minute)/10)
 if second<10:second="0"+second+""
 mes ""+minute+"分"+second+"秒"
+
+if byou=3000 : dialog "残り2分です。",0
+if byou=1200 : dialog "残り2分です。",0
+if byou=0    : dialog "15分経過しました。速やかに交代してください。",1
+if byou=-600 : dialog "時間切れです。強制的に交代します。",1
 
 wait 1
 
@@ -239,6 +240,7 @@ next
 	stop
 *search
 	cls
+	dim gamename //ゲーム名を登録しておく
 	mes "検索"
 	kensaku=""
 	input kensaku,200,30,16
@@ -307,20 +309,6 @@ notesel gamename
 noteadd "Rのシューティング"
 noteadd "Sのシューティング" //実際のゲーム名に差し替えてください。
 noteadd "Tのシューティング"
-
-*warning1
-dialog "残り5分です。",0
-goto *Launcher
-*warning2
-dialog "残り2分です。",0
-goto *Launcher
-*timeup
-dialog "15分経過しました。速やかに交代してください。",1
-goto *Launcher
-*timeover
-dialog "時間切れです。強制的に交代します。",1
-goto *koutai
-
 
 *exit
 dialog "本当に終了しますか？",2

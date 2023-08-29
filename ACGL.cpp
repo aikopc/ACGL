@@ -71,32 +71,57 @@ VOID CALLBACK TimerCallback(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
 }
 
 // スタート画面のプロシージャ
-LRESULT CALLBACK StartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK GameSelectionWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE:
-            // 「スタート」ボタンを作成
-            g_hStartButton = CreateWindow(
-                L"BUTTON", L"スタート", WS_VISIBLE | WS_CHILD,
-                100, 100, 200, 40, hWnd, reinterpret_cast<HMENU>(1), NULL, NULL
+            // 「交代」ボタンを作成
+            g_hSwapButton = CreateWindow(
+                L"BUTTON", L"交代", WS_VISIBLE | WS_CHILD,
+                100, 150, 200, 40, hWnd, reinterpret_cast<HMENU>(2), NULL, NULL
             );
-            SendMessage(g_hStartButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+            SendMessage(g_hSwapButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+            EnableWindow(g_hSwapButton, FALSE); // 最初は非アクティブにする
+
+            // 「前ページ」ボタンを作成
+            g_hPrevPageButton = CreateWindow(
+                L"BUTTON", L"前ページ", WS_VISIBLE | WS_CHILD,
+                350, 150, 100, 40, hWnd, reinterpret_cast<HMENU>(3), NULL, NULL
+            );
+            SendMessage(g_hPrevPageButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+
+            // 「次ページ」ボタンを作成
+            g_hNextPageButton = CreateWindow(
+                L"BUTTON", L"次ページ", WS_VISIBLE | WS_CHILD,
+                450, 150, 100, 40, hWnd, reinterpret_cast<HMENU>(4), NULL, NULL
+            );
+            SendMessage(g_hNextPageButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
             break;
 
         case WM_COMMAND:
             if (HIWORD(wParam) == BN_CLICKED) {
                 int buttonId = LOWORD(wParam);
-                if (buttonId == 1) { // 「スタート」ボタンがクリックされたら
-                    ShowWindow(g_hMainWindow, SW_HIDE); // スタート画面を非表示
-                    ShowWindow(g_hSwapButton, SW_SHOW); // 「交代」ボタンを表示
-                    SetTimer(g_hGameSelectionWindow, 1, 1000, TimerCallback); // タイマーを開始
-                    g_timerActive = true;
-                    g_notification10Shown = false; // 通知リセット
-                    g_notification13Shown = false; // 通知リセット
+                if (buttonId == 2) { // 「交代」ボタンがクリックされたら
+                    ShowWindow(g_hMainWindow, SW_SHOW); // スタート画面を表示
+                    ShowWindow(hWnd, SW_HIDE); // ゲーム選択画面を非表示
+                    KillTimer(hWnd, 1); // タイマーを停止
+                    g_timerActive = false;
+                    EnableWindow(g_hSwapButton, FALSE); // 「交代」ボタンを非アクティブにする
+                } else if (buttonId == 3) { // 「前ページ」ボタンがクリックされたら
+                    // 前ページに移動
+                    g_currentPage = (g_currentPage - 1 + g_maxPages) % g_maxPages;
+                    // ボタンの表示を更新
+                    UpdateGameButtons(hWnd);
+                } else if (buttonId == 4) { // 「次ページ」ボタンがクリックされたら
+                    // 次ページに移動
+                    g_currentPage = (g_currentPage + 1) % g_maxPages;
+                    // ボタンの表示を更新
+                    UpdateGameButtons(hWnd);
                 }
             }
             break;
 
         case WM_DESTROY:
+            KillTimer(hWnd, 1); // タイマーを停止
             PostQuitMessage(0);
             break;
 

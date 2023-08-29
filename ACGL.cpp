@@ -1,168 +1,251 @@
 #include <windows.h>
 #include <vector>
 #include <string>
-#include <iostream>
-#include <algorithm>  // For std::shuffle
-#include <ctime>      // For std::time
 
-// ... (GameInfo struct and global variables remain the same)
+// グローバル変数
+HWND g_hMainWindow;
+HWND g_hStartButton;
+HWND g_hGameSelectionWindow;
+HWND g_hSwapButton;
+HWND g_hPrevPageButton;
+HWND g_hNextPageButton;
+int g_timerDuration = 15 * 60; // タイマーの時間（秒）
+bool g_timerActive = false; // タイマーがアクティブかどうか
+bool g_notification10Shown = false; // 10分通知が表示されたかどうか
+bool g_notification13Shown = false; // 13分通知が表示されたかどうか
 
-// Additional structure to hold folder information
-struct FolderInfo {
-    std::string name;
-    std::string folderPath;
-};
+// タイマーのコールバック関数
+VOID CALLBACK TimerCallback(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
+    static int elapsedTime = 0;
+    elapsedTime++;
 
-// Global variables
-std::vector<FolderInfo> folders;
-HWND hwndMain;          // Handle to the main window
-HWND hwndGameList;      // Handle to the game list window
-HWND hwndTimerDisplay;  // Handle to the timer display window
-HWND hwndAdmin;         // Handle to the admin window
+    if (!g_notification10Shown && elapsedTime >= 10 * 60) {
+        g_notification10Shown = true;
+        // 10分通知を表示（Windows 10以降で動作）
+        NOTIFYICONDATA nid = {};
+        nid.cbSize = sizeof(NOTIFYICONDATA);
+        nid.hWnd = hWnd;
+        nid.uID = 1;
+        nid.uFlags = NIF_INFO;
+        nid.dwInfoFlags = NIIF_INFO;
+        nid.uTimeout = 5000; // 通知が表示される時間（ミリ秒）
+        wcscpy_s(nid.szInfoTitle, L"タイマー通知");
+        wcscpy_s(nid.szInfo, L"10分が経過しました。");
+        Shell_NotifyIcon(NIM_ADD, &nid);
+    }
 
-const int TIMER_ID = 1;  // Timer ID for the 15-minute timer
-const int TIMER_INTERVAL = 1000;  // Timer interval in milliseconds (1 second)
+    if (!g_notification13Shown && elapsedTime >= 13 * 60) {
+        g_notification13Shown = true;
+        // 13分通知を表示（Windows 10以降で動作）
+        NOTIFYICONDATA nid = {};
+        nid.cbSize = sizeof(NOTIFYICONDATA);
+        nid.hWnd = hWnd;
+        nid.uID = 2;
+        nid.uFlags = NIF_INFO;
+        nid.dwInfoFlags = NIIF_INFO;
+        nid.uTimeout = 5000; // 通知が表示される時間（ミリ秒）
+        wcscpy_s(nid.szInfoTitle, L"タイマー通知");
+        wcscpy_s(nid.szInfo, L"13分が経過しました。");
+        Shell_NotifyIcon(NIM_ADD, &nid);
+    }
 
-time_t startTime = 0;   // Timestamp when the timer started
-bool isTimerRunning = false;  // Flag to track whether the timer is running
+    if (elapsedTime >= g_timerDuration) {
+        g_timerActive = false; // タイマーを停止
 
-bool isAdminMode = false; // Flag to track if the admin mode is active
-const std::string adminPassword = "your_admin_password"; // Replace with your admin password
+        // タイマーの通知を表示（Windows 10以降で動作）
+        NOTIFYICONDATA nid = {};
+        nid.cbSize = sizeof(NOTIFYICONDATA);
+        nid.hWnd = hWnd;
+        nid.uID = 3;
+        nid.uFlags = NIF_INFO;
+        nid.dwInfoFlags = NIIF_INFO;
+        nid.uTimeout = 5000; // 通知が表示される時間（ミリ秒）
+        wcscpy_s(nid.szInfoTitle, L"タイマー通知");
+        wcscpy_s(nid.szInfo, L"タイマーが終了しました。");
+        Shell_NotifyIcon(NIM_ADD, &nid);
 
-// Callback function for button click on the main screen
-void OnStartButtonClick() {
-    ShowWindow(hwndMain, SW_HIDE);  // Hide the main window
-
-    // Create the game list window
-    WNDCLASS wc = {};
-    wc.lpfnWndProc = GameListWindowProc;
-    wc.hInstance = GetModuleHandle(NULL);
-    wc.lpszClassName = "GameListWindowClass";
-    RegisterClass(&wc);
-
-    hwndGameList = CreateWindow(wc.lpszClassName, "Game List", WS_OVERLAPPEDWINDOW,
-                                100, 100, 300, 300, NULL, NULL, wc.hInstance, NULL);
-
-    // Create the timer display window
-    hwndTimerDisplay = CreateWindow("STATIC", "Timer: 15:00", WS_VISIBLE | WS_CHILD,
-                                    20, 220, 100, 25, hwndGameList, NULL, NULL, NULL);
-
-    // Start the 15-minute timer
-    SetTimer(hwndGameList, TIMER_ID, TIMER_INTERVAL, NULL);
-    startTime = time(NULL);
-    isTimerRunning = true;
-
-    // Show the game list window
-    ShowWindow(hwndGameList, SW_SHOWDEFAULT);
-}
-
-// Callback function for button click on the admin screen
-void OnAdminButtonClick(HWND hwnd) {
-    char enteredPassword[100];
-    GetWindowText(hwndAdmin, enteredPassword, sizeof(enteredPassword));
-
-    if (enteredPassword == adminPassword) {
-        isAdminMode = true;
-        // Show the admin controls or perform admin tasks here
-        // ...
-    } else {
-        MessageBox(hwnd, "Incorrect password. Please try again.", "Authentication Failed", MB_ICONERROR);
+        // ゲーム選択画面を無効化
+        EnableWindow(g_hGameSelectionWindow, FALSE);
+        EnableWindow(g_hSwapButton, TRUE); // 交代ボタンをアクティブにする
     }
 }
 
-// Callback function for button click on the game list screen
-void OnFolderButtonClick(HWND hwnd, int folderId) {
-    if (isAdminMode) {
-        // Perform admin-specific actions here
-        // ...
-    } else {
-        if (folderId >= 0 && folderId < folders.size()) {
-            std::string folderPath = folders[folderId].folderPath;
-            ShellExecute(NULL, "open", folderPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
-        }
-    }
-}
-
-// Callback function for "交代" button click on the game list screen
-void OnReplaceButtonClick(HWND hwnd) {
-    currentPage = 0;
-    isFirstPage = true;
-
-    // Reshuffle remaining games on the first page
-    std::vector<GameInfo> remainingGames;
-    for (int i = 3; i < games.size() && i < gamesPerPage; ++i) {
-        remainingGames.push_back(games[i]);
-    }
-    std::shuffle(remainingGames.begin(), remainingGames.end(), std::mt19937(std::time(0)));
-
-    // Replace the reshuffled games on the first page
-    for (int i = 0; i < remainingGames.size(); ++i) {
-        games[i + 3] = remainingGames[i];
-    }
-
-    // Clear folders
-    folders.clear();
-
-    // Stop the timer
-    KillTimer(hwnd, TIMER_ID);
-    isTimerRunning = false;
-
-    // Hide the game list window
-    ShowWindow(hwnd, SW_HIDE);
-
-    // Show the main window again
-    ShowWindow(hwndMain, SW_SHOWDEFAULT);
-}
-
-// ... (OnTimer and other functions remain the same)
-
-// Callback function for window procedure of the admin screen
-LRESULT CALLBACK AdminWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+// スタート画面のプロシージャ
+LRESULT CALLBACK StartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE:
-            CreateWindow("EDIT", "", WS_VISIBLE | WS_CHILD | ES_PASSWORD, 20, 20, 200, 25, hwnd, NULL, NULL, NULL);
-            CreateWindow("BUTTON", "Authenticate", WS_VISIBLE | WS_CHILD, 20, 60, 100, 40, hwnd, (HMENU)1, NULL, NULL);
-            hwndAdmin = hwnd;
+            // 「スタート」ボタンを作成
+            g_hStartButton = CreateWindow(
+                L"BUTTON", L"スタート", WS_VISIBLE | WS_CHILD,
+                100, 100, 200, 40, hWnd, reinterpret_cast<HMENU>(1), NULL, NULL
+            );
+            SendMessage(g_hStartButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
             break;
+
         case WM_COMMAND:
-            if (LOWORD(wParam) == 1) {
-                OnAdminButtonClick(hwnd);
+            if (HIWORD(wParam) == BN_CLICKED) {
+                int buttonId = LOWORD(wParam);
+                if (buttonId == 1) { // 「スタート」ボタンがクリックされたら
+                    ShowWindow(g_hMainWindow, SW_HIDE); // スタート画面を非表示
+                    ShowWindow(g_hSwapButton, SW_SHOW); // 「交代」ボタンを表示
+                    SetTimer(g_hGameSelectionWindow, 1, 1000, TimerCallback); // タイマーを開始
+                    g_timerActive = true;
+                    g_notification10Shown = false; // 通知リセット
+                    g_notification13Shown = false; // 通知リセット
+                }
             }
             break;
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
             break;
+
         default:
-            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
     return 0;
 }
 
-// ... (GameListWindowProc and MainWindowProc remain the same)
+// ゲーム選択ウィンドウのプロシージャ
+LRESULT CALLBACK GameSelectionWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_CREATE:
+            // 「交代」ボタンを作成
+            g_hSwapButton = CreateWindow(
+                L"BUTTON", L"交代", WS_VISIBLE | WS_CHILD,
+                100, 150, 200, 40, hWnd, reinterpret_cast<HMENU>(2), NULL, NULL
+            );
+            SendMessage(g_hSwapButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+            EnableWindow(g_hSwapButton, FALSE); // 最初は非アクティブにする
 
-int main() {
-    // ... (GameInfo struct and games/folders vector initialization remain the same)
+            // 「前ページ」ボタンを作成
+            g_hPrevPageButton = CreateWindow(
+                L"BUTTON", L"前ページ", WS_VISIBLE | WS_CHILD,
+                350, 150, 100, 40, hWnd, reinterpret_cast<HMENU>(3), NULL, NULL
+            );
+            SendMessage(g_hPrevPageButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
 
-    // Create the main window
-    HINSTANCE hInstance = GetModuleHandle(NULL);
+            // 「次ページ」ボタンを作成
+            g_hNextPageButton = CreateWindow(
+                L"BUTTON", L"次ページ", WS_VISIBLE | WS_CHILD,
+                450, 150, 100, 40, hWnd, reinterpret_cast<HMENU>(4), NULL, NULL
+            );
+            SendMessage(g_hNextPageButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+            break;
+
+        case WM_COMMAND:
+            if (HIWORD(wParam) == BN_CLICKED) {
+                int buttonId = LOWORD(wParam);
+                if (buttonId == 2) { // 「交代」ボタンがクリックされたら
+                    ShowWindow(g_hMainWindow, SW_SHOW); // スタート画面を表示
+                    ShowWindow(hWnd, SW_HIDE); // ゲーム選択画面を非表示
+                    KillTimer(hWnd, 1); // タイマーを停止
+                    g_timerActive = false;
+                    EnableWindow(g_hSwapButton, FALSE); // 「交代」ボタンを非アクティブにする
+                } else if (buttonId == 3) { // 「前ページ」ボタンがクリックされたら
+                    // 前ページに移動
+                    g_currentPage = (g_currentPage - 1 + g_maxPages) % g_maxPages;
+                    // ボタンの表示を更新
+                    UpdateGameButtons(hWnd);
+                } else if (buttonId == 4) { // 「次ページ」ボタンがクリックされたら
+                    // 次ページに移動
+                    g_currentPage = (g_currentPage + 1) % g_maxPages;
+                    // ボタンの表示を更新
+                    UpdateGameButtons(hWnd);
+                }
+            }
+            break;
+
+        case WM_DESTROY:
+            KillTimer(hWnd, 1); // タイマーを停止
+            PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+    return 0;
+}
+
+// ゲーム選択ボタンを更新する関数
+void UpdateGameButtons(HWND hWnd) {
+    // ページ内の最大ボタン数
+    const int maxButtonsPerPage = 6;
+    // 現在のページで表示すべきボタンのインデックス範囲を計算
+    int startIndex = g_currentPage * maxButtonsPerPage;
+    int endIndex = std::min(startIndex + maxButtonsPerPage, static_cast<int>(g_gameNames.size()));
+
+    // 以前のボタンを削除
+    HWND child = GetWindow(hWnd, GW_CHILD);
+    while (child != NULL) {
+        DestroyWindow(child);
+        child = GetWindow(child, GW_HWNDNEXT);
+    }
+
+    // ゲーム名に対応するボタンを作成
+    int buttonIndex = 0;
+    for (int i = startIndex; i < endIndex; ++i) {
+        HWND hButton = CreateWindow(
+            L"BUTTON", g_gameNames[i].c_str(), WS_VISIBLE | WS_CHILD,
+            100, 200 + buttonIndex * 50, 300, 40, hWnd, reinterpret_cast<HMENU>(i + 1), NULL, NULL
+        );
+        SendMessage(hButton, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+        ++buttonIndex;
+    }
+}
+
+// メイン関数
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // ゲーム情報を設定（例として6つのゲームを追加）
+    std::vector<std::wstring> g_gameNames;
+    g_gameNames.push_back(L"game1");
+    g_gameNames.push_back(L"game2");
+    g_gameNames.push_back(L"game3");
+    g_gameNames.push_back(L"game4");
+    g_gameNames.push_back(L"game5");
+    g_gameNames.push_back(L"game6");
+    // 最大ページ数を計算
+    g_maxPages = (g_gameNames.size() + 5) / 6;
+
+    // ゲーム選択ウィンドウのクラスを登録
     WNDCLASS wc = {};
-    wc.lpfnWndProc = MainWindowProc;
+    wc.lpfnWndProc = GameSelectionWindowProc;
     wc.hInstance = hInstance;
-    wc.lpszClassName = "MainWindowClass";
+    wc.lpszClassName = L"GameSelectionWindow";
     RegisterClass(&wc);
 
-    HWND hwndMain = CreateWindow(wc.lpszClassName, "Game Launcher", WS_OVERLAPPEDWINDOW,
-                                 100, 100, 300, 250, NULL, NULL, hInstance, NULL);
+    // スタート画面のクラスを登録
+    WNDCLASS startWc = {};
+    startWc.lpfnWndProc = StartWindowProc;
+    startWc.hInstance = hInstance;
+    startWc.lpszClassName = L"StartWindow";
+    RegisterClass(&startWc);
 
-    // Show the main window
-    ShowWindow(hwndMain, SW_SHOWDEFAULT);
+    // ゲーム選択ウィンドウを作成
+    g_hGameSelectionWindow = CreateWindow(
+        L"GameSelectionWindow", L"ゲーム選択",
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+        500, 300, NULL, NULL, hInstance, NULL
+    );
 
-    // Message loop
-    MSG msg;
+    // スタート画面を作成
+    g_hMainWindow = CreateWindow(
+        L"StartWindow", L"スタート画面",
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+        500, 300, NULL, NULL, hInstance, NULL
+    );
+
+    // メッセージループ開始
+    MSG msg = {};
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
-    return 0;
+    if (g_timerActive) {
+        KillTimer(g_hGameSelectionWindow, 1); // タイマーを停止
+    }
+
+    return static_cast<int>(msg.wParam);
 }
+
